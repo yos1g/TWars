@@ -16,7 +16,7 @@ public class SimpleMapBullet : MonoBehaviour {
 
 		Client client = other.transform.gameObject.GetComponent<Client>();
 		client.bullet = this.bullet;
-		client.currentScore = client.getScore() + 1; 
+		//client.currentScore = client.getScore() + 1; 
 		Destroy(this.gameObject);
 	}
 }

@@ -2,35 +2,74 @@
 using System.Collections;
 
 public class Client : MonoBehaviour {
+
+	// ======================================================== //
+
 	public Camera cam;				// ref camera
+
 	private Vector3 moveDirection;	// 
 	
 	private float speed = 6.0F;		// speed input
+
 	public float speedStep = 6.0f;	// speed walk
+
 	public float speedShift = 9.0f;	// speed run
+
 	public float gravity = 20.0F;	// 
-	public float speedRotate = 4;	// 
-	
+
+	private float speedRotate = 90.0f;	// 
+
 	private CharacterController controller;	// ref controller
 	
 	private float lastSynchronizationTime = 0f;
+
 	private float syncDelay = 0f;
+
 	private float syncTime = 0f;
 
 	private Vector3 syncStartPosition = Vector3.zero;
+
 	private Vector3 syncEndPosition = Vector3.zero;
 
 	private Quaternion syncStartRotation = Quaternion.identity;
+
 	private Quaternion syncEndRotation = Quaternion.identity;
 
 	public GameObject bullet;
 
 	public int currentScore;
 
+	public bool needRespawn = false;
+
 	public int getScore()
 	{
 		return currentScore;
 	}
+
+	// ======================================================== //
+
+	void Start()
+	{
+		if (networkView.isMine)
+		{
+			GameObject scoreManager = GameObject.FindWithTag("ScoreManager");
+			PlayersManager nManager = scoreManager.gameObject.GetComponent<PlayersManager>();
+
+			for(int i = 0; i < nManager.players.Count; i++)
+			{
+				if (nManager.players[i].networkPlayer == int.Parse(Network.player.ToString()))
+				{
+					currentScore = nManager.players[i].playerScore;
+					UpdateScore(currentScore);
+				}
+			}
+
+		} else {
+			//enabled = false;
+		}
+	}
+
+	// ======================================================== //
 
 	void Awake () 
 	{
@@ -39,11 +78,19 @@ public class Client : MonoBehaviour {
 		this.networkView.observed = this;
 	}
 
+	// ======================================================== //
 
 	void Update () 
 	{
 		if(networkView.isMine) 
 		{
+			if (needRespawn)
+			{
+				GameObject[] spawns = GameObject.FindGameObjectsWithTag("Spawn");
+				transform.position = spawns[UnityEngine.Random.Range(0, spawns.Length)].transform.position;
+				needRespawn = false;
+			}
+
 			if (controller.isGrounded) 
 			{
 				moveDirection = new Vector3(0, 0, Input.GetAxis("Vertical"));
@@ -55,12 +102,14 @@ public class Client : MonoBehaviour {
 				else speed = speedStep;
 
 				if (Input.GetButtonDown("Jump") && bullet != null)
-					networkView.RPC ("RPC_Fire", RPCMode.All, transform.position + transform.forward, transform.rotation);
+					Network.Instantiate(bullet, transform.position + transform.forward, transform.rotation, networkView.group);
+					//networkView.RPC ("RPC_Fire", RPCMode.All, transform.position + transform.forward, transform.rotation, Network.player);
+
 			}
 			
 			moveDirection.y -= gravity * Time.deltaTime;
 			controller.Move(moveDirection * Time.deltaTime);
-			transform.Rotate(Vector3.down * speedRotate * Input.GetAxis("Horizontal") * -1, Space.World);
+			transform.Rotate(Vector3.down * speedRotate * Input.GetAxis("Horizontal") * -1 *  Time.deltaTime, Space.World);
 		}
 		else 
 		{
@@ -74,6 +123,7 @@ public class Client : MonoBehaviour {
 		}
 	}
 
+	// ======================================================== //
 
 	void OnSerializeNetworkView (BitStream stream, NetworkMessageInfo info)
 	{
@@ -110,6 +160,7 @@ public class Client : MonoBehaviour {
 
 	}
 
+	// ======================================================== //
 
 	// Interpolation
 	private void SyncedMovement() 
@@ -119,10 +170,39 @@ public class Client : MonoBehaviour {
 		transform.rotation = Quaternion.Slerp(syncStartRotation, syncEndRotation, syncTime / syncDelay);
 	}
 
-	[RPC]
-	void RPC_Fire(Vector3 startPosition, Quaternion velocity)
+	// ======================================================== //
+
+	void UpdateScore(int score)
 	{
-		Instantiate(bullet, startPosition, velocity);
+		GameObject scoreManager = GameObject.FindWithTag("ScoreManager");
+		PlayersManager nManager = scoreManager.GetComponent<PlayersManager>();
+		nManager.scored = true;
+		nManager.playerScore = score;
 	}
-	
+
+	// ============================ RPC ============================ //
+
+	[RPC] void RPC_Scored()
+	{
+		GameObject scoreManager = GameObject.FindWithTag("ScoreManager");
+		PlayersManager nManager = scoreManager.GetComponent<PlayersManager>();
+		
+		for(int i = 0; i < nManager.players.Count; i++)
+		{
+			if (nManager.players[i].networkPlayer == int.Parse(Network.player.ToString()))
+			{
+				currentScore = nManager.players[i].playerScore + 1;
+				UpdateScore(currentScore);
+			}
+		}
+	}
+
+	// ============================ RPC ============================ //
+
+	[RPC] void RPC_NeedRespawn()
+	{
+		needRespawn = true;
+	}
+
+	// ======================================================== //
 }

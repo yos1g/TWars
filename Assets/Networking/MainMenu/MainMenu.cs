@@ -5,11 +5,14 @@ using System.Collections.Generic;
 
 public class MainMenu : MonoBehaviour {
 
+	// ======================================================== //
+
 	public GameObject PlayerPrefab;
-	public GameObject scoreManager;
 
 	public string ip = "127.0.0.1";
+
 	public string port = "27010";
+
 	public bool connected = false;
 
 	public GameObject spawn;
@@ -17,48 +20,49 @@ public class MainMenu : MonoBehaviour {
 	private GameObject _ref;
 
 	private bool hideMenu = false;
+
 	private bool showLists = false;
 
 	public GUISkin menuSkin;
 
 	private const string typeName = "WWWAAARRRSSS";
 
-	// game name for register on master server
 	public string gameName = "RoomName";
 
 	private bool isRefreshingHostList = false;
+
 	private HostData[] hostList;
 
 	private bool isServer = false;
 
 	private bool isScore = false;
 
-	// Use this for initialization
+	// ======================================================== //
+
 	void Start () 
 	{
 		this.networkView.observed = this;
 	}
 
-	
-	// Update is called once per frame
+	// ======================================================== //
+
 	void Update () {
+
 		if (Input.GetKeyUp(KeyCode.Escape)) 
-		{
 			hideMenu = !hideMenu;
-		}
 
 		if (Input.GetKeyDown(KeyCode.Tab))
-		{
 			isScore = !isScore;
-		} 
 
 		if (isRefreshingHostList && MasterServer.PollHostList().Length > 0)
 		{
 			isRefreshingHostList = false;
 			hostList = MasterServer.PollHostList();
 		}
+
 	}
 
+	// ======================================================== //
 
 	void OnGUI()
 	{
@@ -83,6 +87,7 @@ public class MainMenu : MonoBehaviour {
 
 	}
 
+	// ======================================================== //
 
 	void ConnectedMenu() 
 	{
@@ -104,6 +109,7 @@ public class MainMenu : MonoBehaviour {
 
 	}
 
+	// ======================================================== //
 
 	void StartMenu()
 	{
@@ -115,14 +121,12 @@ public class MainMenu : MonoBehaviour {
 		
 		if(GUI.Button(new Rect((Screen.width - 110)/2, Screen.height/2, 110, 30), "Connect")) 
 		{
-			isServer = false;
 			Network.Connect(ip, Convert.ToInt32(port));
 		}
 
 		if(GUI.Button(new Rect((Screen.width - 110)/2, Screen.height/2 + 35, 110, 30), "Create Game")) 
 		{
 			Network.InitializeServer(10, Convert.ToInt32(port), false);
-			isServer = true;
 			MasterServer.RegisterHost(typeName, gameName);
 		}
 
@@ -135,27 +139,22 @@ public class MainMenu : MonoBehaviour {
 		GUILayout.EndHorizontal();
 	}
 
+	// ======================================================== //
 
 	void ScoreTab()
 	{
-
 		GUILayout.BeginHorizontal();
-
-		int i = 0;
-		foreach(GameObject player in GameObject.FindGameObjectsWithTag("Player"))
+		GameObject scoreManager = GameObject.FindWithTag("ScoreManager");
+		PlayersManager nManager = scoreManager.GetComponent<PlayersManager>();
+		for(int i = 0; i < nManager.players.Count; i++)
 		{
-			i++;
-			Client client = player.GetComponent<Client>();
-
-			if (client == null)
-				continue;
-
-			GUI.Label(new Rect((Screen.width - 100)/2, Screen.height/2 - 200 + 30 * i, 100, 20), player.name + " " + client.currentScore );
+			GUI.Label(new Rect((Screen.width - 100)/2, Screen.height/2-60 + 30 * i, 100, 20), "T:" + nManager.players[i].playerName);
+			GUI.Label(new Rect((Screen.width - 100)/2, Screen.height/2-30 + 30 * i, 100, 20), "S:" + nManager.players[i].playerScore.ToString());
 		}
-
 		GUILayout.EndHorizontal();
 	}
 
+	// ======================================================== //
 
 	void HostsList() 
 	{
@@ -179,6 +178,7 @@ public class MainMenu : MonoBehaviour {
 		GUILayout.EndHorizontal();
 	}
 
+	// ======================================================== //
 
 	private void RefreshHostList()
 	{
@@ -189,25 +189,31 @@ public class MainMenu : MonoBehaviour {
 		}
 	}
 
+	// ======================================================== //
 
 	private void JoinServer(HostData hostData)
 	{
 		Network.Connect(hostData);
 	}
 
+	// ======================================================== //
 
 	void OnConnectedToServer () 
 	{
 		CreatePlayer();
 	}
 
+	// ======================================================== //
 
 	void OnServerInitialized () 
 	{
 		CreatePlayer();
 		OnPlayerConnected(Network.player);
+		PlayersManager nManager = GameObject.FindWithTag("ScoreManager").GetComponent<PlayersManager>();
+		nManager.networkView.RPC("RPC_AddPlayer", RPCMode.AllBuffered, Network.player);
 	}
 
+	// ======================================================== //
 
 	void OnDisconnectedFromServer (NetworkDisconnection info) 
 	{
@@ -219,6 +225,7 @@ public class MainMenu : MonoBehaviour {
 		Application.LoadLevel("main");
 	}
 
+	// ======================================================== //
 
 	void OnPlayerDisconnected (NetworkPlayer pl) 
 	{
@@ -226,21 +233,29 @@ public class MainMenu : MonoBehaviour {
 		Network.DestroyPlayerObjects(pl);
 	}
 
+	// ======================================================== //
 
 	void OnPlayerConnected(NetworkPlayer pl) 
 	{
 
 	}
 
+	// ======================================================== //
 
 	void CreatePlayer() 
 	{
 		connected = true;
 		camera.enabled = false;
 		camera.gameObject.GetComponent<AudioListener>().enabled = false;
-		_ref = (GameObject)Network.Instantiate(PlayerPrefab, spawn.transform.position, spawn.transform.rotation, 1);
+		GameObject[] spawns = GameObject.FindGameObjectsWithTag("Spawn");
+		_ref = (GameObject)Network.Instantiate(PlayerPrefab, spawns[UnityEngine.Random.Range(0, spawns.Length)].transform.position, spawn.transform.rotation, 1);
 		_ref.transform.GetComponentInChildren<Camera>().camera.enabled = true;
 		_ref.transform.GetComponentInChildren<AudioListener>().enabled = true;
 	}
-	
+
+	// ======================================================== //
+
+
+
+	// ======================================================== //
 }
