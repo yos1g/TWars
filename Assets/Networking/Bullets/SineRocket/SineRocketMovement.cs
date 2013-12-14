@@ -44,16 +44,32 @@ public class SineRocketMovement : MonoBehaviour {
 	}
 
 	// ======================================================== //
-
 	void OnTriggerEnter (Collider other) 
 	{
-		if (other.transform.gameObject.tag == "Player") 
+		if (other.transform.GetComponent<NetworkView>() == null) {
+			Network.Destroy(this.gameObject);
+			return;
+		}
+
+		if (other.transform.gameObject.tag == "Player" && other.transform.networkView.owner != this.networkView.owner) 
 		{
 			GameObject scoreManager = GameObject.FindWithTag("ScoreManager");
 			scoreManager.networkView.RPC("RPC_ChangePlayersListWithScore", RPCMode.AllBuffered, networkView.owner, scoreManager.GetComponent<PlayersManager>().getPlayerScore(networkView.owner)+1);
 			other.transform.networkView.RPC("RPC_NeedRespawn", other.transform.networkView.owner);
+		} 
+		else if (other.transform.networkView.owner == this.networkView.owner)
+		{
+			return;
 		}
 
+		Network.Destroy(this.gameObject);
+	}
+
+	// ======================================================== //
+
+	void OnCollisionEnter(Collision other)
+	{
+		Debug.Log(other.transform.gameObject.name);
 		Network.Destroy(this.gameObject);
 	}
 

@@ -17,6 +17,8 @@ public class PlayersManager : MonoBehaviour {
 
 	// ======================================================== //
 
+	// ======================================================== //
+
 	void Awake()
 	{
 		this.networkView.observed = this;

@@ -27,7 +27,7 @@ public class MainMenu : MonoBehaviour {
 
 	private const string typeName = "WWWAAARRRSSS";
 
-	public string gameName = "RoomName";
+	public string gameName = "Player";
 
 	private bool isRefreshingHostList = false;
 
@@ -114,10 +114,16 @@ public class MainMenu : MonoBehaviour {
 	void StartMenu()
 	{
 		GUILayout.BeginHorizontal();
-		GUI.Label(new Rect((Screen.width - 100)/2, Screen.height/2-60, 100, 20), "Ip");
-		GUI.Label(new Rect((Screen.width - 100)/2, Screen.height/2-30, 100, 20), "Port");
-		ip = GUI.TextField(new Rect((Screen.width - 100)/2+35, Screen.height/2-60, 100, 20), ip);
-		port = GUI.TextField(new Rect((Screen.width - 100)/2+35, Screen.height/2-30, 50, 20), port);
+		GUI.Label(new Rect((Screen.width - 100)/2, Screen.height/2 - 90, 100, 20), "Name");
+		GUI.Label(new Rect((Screen.width - 100)/2, Screen.height/2 - 60, 100, 20), "Ip");
+		GUI.Label(new Rect((Screen.width - 100)/2, Screen.height/2 - 30, 100, 20), "Port");
+
+		gameName = GUI.TextField(new Rect((Screen.width - 100)/2+35, Screen.height/2 - 90, 100, 20), gameName);
+
+		PlayerPrefs.SetString("PlayerName", gameName);
+
+		ip = GUI.TextField(new Rect((Screen.width - 100)/2+35, Screen.height/2 - 60, 100, 20), ip);
+		port = GUI.TextField(new Rect((Screen.width - 100)/2+35, Screen.height/2 - 30, 50, 20), port);
 		
 		if(GUI.Button(new Rect((Screen.width - 110)/2, Screen.height/2, 110, 30), "Connect")) 
 		{
@@ -148,8 +154,7 @@ public class MainMenu : MonoBehaviour {
 		PlayersManager nManager = scoreManager.GetComponent<PlayersManager>();
 		for(int i = 0; i < nManager.players.Count; i++)
 		{
-			GUI.Label(new Rect((Screen.width - 100)/2, Screen.height/2-60 + 30 * i, 100, 20), "T:" + nManager.players[i].playerName);
-			GUI.Label(new Rect((Screen.width - 100)/2, Screen.height/2-30 + 30 * i, 100, 20), "S:" + nManager.players[i].playerScore.ToString());
+			GUI.Label(new Rect((Screen.width - 100)/2, Screen.height/2-60 + 30 * i, 100, 20), nManager.players[i].playerName + " / " + nManager.players[i].playerScore.ToString() );
 		}
 		GUILayout.EndHorizontal();
 	}
@@ -201,6 +206,9 @@ public class MainMenu : MonoBehaviour {
 	void OnConnectedToServer () 
 	{
 		CreatePlayer();
+		PlayersManager nManager = GameObject.FindWithTag("ScoreManager").GetComponent<PlayersManager>();
+		nManager.named = true;
+		nManager.playerName = PlayerPrefs.GetString("PlayerName");
 	}
 
 	// ======================================================== //
@@ -210,7 +218,10 @@ public class MainMenu : MonoBehaviour {
 		CreatePlayer();
 		OnPlayerConnected(Network.player);
 		PlayersManager nManager = GameObject.FindWithTag("ScoreManager").GetComponent<PlayersManager>();
+		nManager.named = true;
+		nManager.playerName = gameName;
 		nManager.networkView.RPC("RPC_AddPlayer", RPCMode.AllBuffered, Network.player);
+
 	}
 
 	// ======================================================== //
