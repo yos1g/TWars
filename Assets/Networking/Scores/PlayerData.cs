@@ -1,4 +1,6 @@
-﻿public class PlayerData {
+﻿using UnityEngine;
+
+public class PlayerData {
 
 	// ======================================================== //
 
@@ -7,6 +9,8 @@
 	public string playerName;
 
 	public int playerScore;
+
+	public Color playerColor;
 
 	// ======================================================== //
 
@@ -17,6 +21,7 @@
 		player.networkPlayer = networkPlayer;
 		player.playerName = playerName;
 		player.playerScore = playerScore;
+		player.playerColor = playerColor;
 
 		return player;
 	}

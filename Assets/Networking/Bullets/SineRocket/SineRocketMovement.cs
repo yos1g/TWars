@@ -7,11 +7,11 @@ public class SineRocketMovement : MonoBehaviour {
 
 	private Vector3 basePosition;
 
-	private float speed = 15.0f;
+	public float speed = 15.0f;
 
-	private float amplitude = 1.0f;
+	public float amplitude = 1.0f;
 
-	private float omega = 15.0f;
+	public float omega = 15.0f;
 
 	// ======================================================== //
 
@@ -55,7 +55,7 @@ public class SineRocketMovement : MonoBehaviour {
 		{
 			GameObject scoreManager = GameObject.FindWithTag("ScoreManager");
 			scoreManager.networkView.RPC("RPC_ChangePlayersListWithScore", RPCMode.AllBuffered, networkView.owner, scoreManager.GetComponent<PlayersManager>().getPlayerScore(networkView.owner)+1);
-			other.transform.networkView.RPC("RPC_NeedRespawn", other.transform.networkView.owner);
+			other.transform.networkView.RPC("RPC_NeedRespawn", RPCMode.AllBuffered, other.transform.networkView.owner);
 		} 
 		else if (other.transform.networkView.owner == this.networkView.owner)
 		{

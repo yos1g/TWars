@@ -17,7 +17,7 @@ public class Client : MonoBehaviour {
 
 	public float gravity = 20.0F;	// 
 
-	private float speedRotate = 90.0f;	// 
+	private float speedRotate = 120.0f;	// 
 
 	private CharacterController controller;	// ref controller
 	
@@ -40,11 +40,6 @@ public class Client : MonoBehaviour {
 	public int currentScore;
 
 	public bool needRespawn = false;
-
-	public int getScore()
-	{
-		return currentScore;
-	}
 
 	// ======================================================== //
 
@@ -103,13 +98,12 @@ public class Client : MonoBehaviour {
 
 				if (Input.GetButtonDown("Jump") && bullet != null)
 					Network.Instantiate(bullet, transform.position + transform.forward, transform.rotation, networkView.group);
-					//networkView.RPC ("RPC_Fire", RPCMode.All, transform.position + transform.forward, transform.rotation, Network.player);
 
 			}
 			
 			moveDirection.y -= gravity * Time.deltaTime;
 			controller.Move(moveDirection * Time.deltaTime);
-			transform.Rotate(Vector3.down * speedRotate * Input.GetAxis("Horizontal") * -1 *  Time.deltaTime, Space.World);
+			transform.Rotate(Vector3.down * (speedRotate + speed * 2) * Input.GetAxis("Horizontal") * -1 *  Time.deltaTime, Space.World);
 		}
 		else 
 		{
@@ -199,8 +193,11 @@ public class Client : MonoBehaviour {
 
 	// ============================ RPC ============================ //
 
-	[RPC] void RPC_NeedRespawn()
+	[RPC] void RPC_NeedRespawn(NetworkPlayer pl)
 	{
+		if (pl != Network.player)
+			return;
+
 		needRespawn = true;
 	}
 
