@@ -41,6 +41,8 @@ public class Client : MonoBehaviour {
 
 	public bool needRespawn = false;
 
+	private bool isFired = false;
+
 	// ======================================================== //
 
 	void Start()
@@ -96,8 +98,11 @@ public class Client : MonoBehaviour {
 					speed = speedShift;
 				else speed = speedStep;
 
-				if (Input.GetButtonDown("Jump") && bullet != null)
-					Network.Instantiate(bullet, transform.position + transform.forward, transform.rotation, networkView.group);
+				if (Input.GetButtonDown("Jump") && bullet != null && isFired == false) {
+					isFired = true;
+					GameObject _refBullet = (GameObject)Network.Instantiate(bullet, transform.position + transform.forward + Vector3.up * 0.25f, transform.rotation, networkView.group);
+					Invoke("Recharge", _refBullet.GetComponent<SineRocketMovement>().rechargeTime);
+				}
 
 			}
 			
@@ -152,6 +157,13 @@ public class Client : MonoBehaviour {
 			currentScore = score;
 		}
 
+	}
+
+	// ======================================================== //
+
+	private void Recharge()
+	{
+		isFired = false;
 	}
 
 	// ======================================================== //

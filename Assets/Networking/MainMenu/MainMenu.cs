@@ -37,6 +37,8 @@ public class MainMenu : MonoBehaviour {
 
 	private bool isScore = false;
 
+	// debug
+	public bool startGameOnRun = false;
 	// ======================================================== //
 
 	void Start () 

@@ -13,6 +13,8 @@ public class SineRocketMovement : MonoBehaviour {
 
 	public float omega = 15.0f;
 
+	public float rechargeTime = 1.0f;
+
 	// ======================================================== //
 
 	void Awake () 
@@ -38,16 +40,18 @@ public class SineRocketMovement : MonoBehaviour {
 
 	// ======================================================== //
 
-	void DestroyBullet()
+	void DestroyBullet(int prefabCase)
 	{
-		DestroyImmediate(this.gameObject);
+		SceneManager sceneManager = GameObject.FindWithTag("SceneManager").GetComponent<SceneManager>();
+		Instantiate(sceneManager.GetPrefab(prefabCase), transform.position - transform.forward * 0.5f, transform.rotation);
+		Network.Destroy(this.gameObject);
 	}
 
 	// ======================================================== //
 	void OnTriggerEnter (Collider other) 
 	{
 		if (other.transform.GetComponent<NetworkView>() == null) {
-			Network.Destroy(this.gameObject);
+			DestroyBullet(1);
 			return;
 		}
 
@@ -62,15 +66,14 @@ public class SineRocketMovement : MonoBehaviour {
 			return;
 		}
 
-		Network.Destroy(this.gameObject);
+		DestroyBullet(2);
 	}
 
 	// ======================================================== //
 
 	void OnCollisionEnter(Collision other)
 	{
-		Debug.Log(other.transform.gameObject.name);
-		Network.Destroy(this.gameObject);
+		DestroyBullet(1);
 	}
 
 	// ======================================================== //
