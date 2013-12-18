@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+
 public class Client : MonoBehaviour {
 
 	// ======================================================== //
@@ -177,7 +178,10 @@ public class Client : MonoBehaviour {
 	}
 
 	// ======================================================== //
-
+	/// <summary>
+	/// Updates the score.
+	/// </summary>
+	/// <param name="score">Score.</param>
 	void UpdateScore(int score)
 	{
 		GameObject scoreManager = GameObject.FindWithTag("ScoreManager");

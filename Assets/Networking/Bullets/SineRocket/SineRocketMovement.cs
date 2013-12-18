@@ -39,11 +39,14 @@ public class SineRocketMovement : MonoBehaviour {
 	}
 
 	// ======================================================== //
-
-	void DestroyBullet(int prefabCase)
+	/// <summary>
+	/// Destroies the bullet.
+	/// </summary>
+	/// <param name="type">Type.</param>
+	void DestroyBullet(DestroyType type)
 	{
 		SceneManager sceneManager = GameObject.FindWithTag("SceneManager").GetComponent<SceneManager>();
-		Instantiate(sceneManager.GetPrefab(prefabCase), transform.position - transform.forward * 0.5f, transform.rotation);
+		Instantiate(sceneManager.GetPrefab(type), transform.position - transform.forward * 0.5f, transform.rotation);
 		Network.Destroy(this.gameObject);
 	}
 
@@ -51,7 +54,7 @@ public class SineRocketMovement : MonoBehaviour {
 	void OnTriggerEnter (Collider other) 
 	{
 		if (other.transform.GetComponent<NetworkView>() == null) {
-			DestroyBullet(1);
+			DestroyBullet(DestroyType.OnlyMe);
 			return;
 		}
 
@@ -66,14 +69,14 @@ public class SineRocketMovement : MonoBehaviour {
 			return;
 		}
 
-		DestroyBullet(2);
+		DestroyBullet(DestroyType.MeAndEnemy);
 	}
 
 	// ======================================================== //
 
 	void OnCollisionEnter(Collision other)
 	{
-		DestroyBullet(1);
+		DestroyBullet(DestroyType.OnlyMe);
 	}
 
 	// ======================================================== //

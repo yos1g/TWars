@@ -48,6 +48,7 @@
   <ItemGroup>
      <Compile Include="Assets\FT_MagicEffect_vol3\Scene\Script\Button.cs" />
      <Compile Include="Assets\Misc\CamHelper.cs" />
+     <Compile Include="Assets\Misc\DestroyType.cs" />
      <Compile Include="Assets\Misc\SceneManager.cs" />
      <Compile Include="Assets\Networking\Bullets\SineRocket\SineRocketMovement.cs" />
      <Compile Include="Assets\Networking\MainMenu\MainMenu.cs" />

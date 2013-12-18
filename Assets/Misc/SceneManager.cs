@@ -7,12 +7,17 @@ public class SceneManager : MonoBehaviour {
 
 	public GameObject enemyExplosionPrefab;
 
-	public GameObject GetPrefab(int prefab)
+	/// <summary>
+	/// Gets the prefab.
+	/// </summary>
+	/// <returns>The prefab.</returns>
+	/// <param name="type">Type.</param>
+	public GameObject GetPrefab(DestroyType type)
 	{
-		switch(prefab) {
-			case 1:
+		switch(type) {
+			case DestroyType.OnlyMe:
 				return explosionPrefab;
-			case 2:
+			case DestroyType.MeAndEnemy:
 				return enemyExplosionPrefab;
 			default:
 				return explosionPrefab;
